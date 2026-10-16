@@ -1,122 +1,122 @@
 import 'package:flutter/material.dart';
+import 'models/user.dart';
+import 'models/bank_account.dart';
+import 'models/book.dart';
+import 'models/magazine.dart';
+import 'models/library.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Lab 2 App',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      home: const HomePage(title: 'Lab 2: Dart & null safety'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class HomePage extends StatelessWidget {
+  const HomePage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    
+    final users = [
+      User(name: 'Ana', age: 21, email: 'ana@example.com'),
+      User(name: 'Bogdan', age: 30),
+      User(name: 'Corina'), 
+    ];
+
+    final accounts = [
+      BankAccount(
+          holderName: 'Ana', balance: 1500.5, bankBranch: 'Bucuresti Centru')
+        ..initializeAccount('RO00TEST0001'),
+      BankAccount(holderName: 'Bogdan')..initializeAccount('RO00TEST0002'),
+      BankAccount(holderName: 'Corina'), // uninitialized
+    ];
+
+    final now = DateTime.now();
+    final library = Library();
+    final book1 = Book(
+      title: 'Dart in Action',
+      author: 'Chris Buckett',
+      publishDate: now.subtract(const Duration(days: 100)),
+      pageCount: 400,
+      isbn: '123-456',
+    );
+    final book2 = Book(title: 'Mystery Book');
+    final mag = Magazine(
+      title: 'Tech Monthly',
+      publishDate: now.subtract(const Duration(days: 20)),
+      issueNumber: 42,
+    );
+    library.addItem(book1);
+    library.addItem(book2);
+    library.addItem(mag);
+    final addDuplicate = library.addItem(book1);
+    final borrow1 = library.borrowItem(book1, users[0]);
+    final borrow2 = library.borrowItem(book1, users[1]); 
+    final byTitle = library.searchByTitle('dart');
+    final nullQuery = library.searchByTitle(null);
+    final byAuthor = library.getItemsByAuthor('buckett');
+    final recent = library.getRecentItems(days: 60);
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      appBar: AppBar(title: Text(title)),
+      body: ListView(
+        children: [
+          const _Header('Users'),
+          for (final u in users)
+            ListTile(
+              title: Text(u.name),
+              subtitle: Text(
+                  'Age: ${u.getDisplayAge()} | Email: ${u.email ?? 'Not provided'}'),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          const _Header('Bank accounts'),
+          for (final a in accounts)
+            ListTile(
+              title: Text(a.holderName),
+              subtitle: Text(
+                  '${a.displayNumber} | Branch: ${a.bankBranch ?? 'N/A'} | Balance: ${a.balance}'),
+            ),
+          const _Header('Library items'),
+          for (final i in library.items)
+            ListTile(
+              title: Text(i.title),
+              subtitle: Text(
+                  '${i.describe()}\nBorrower: ${i.borrower?.name ?? 'Available'}'
+                  '${i.dueDate != null ? ' | Due: ${i.dueDate.toString().split(' ').first}' : ''}'),
+              isThreeLine: true,
+            ),
+          const _Header('Library API results'),
+          ListTile(title: Text('addItem duplicate -> $addDuplicate')),
+          ListTile(title: Text('borrow (free item) -> $borrow1')),
+          ListTile(title: Text('borrow (already borrowed) -> $borrow2')),
+          ListTile(title: Text('searchByTitle("dart") -> ${byTitle.length}')),
+          ListTile(title: Text('searchByTitle(null) -> ${nullQuery.length}')),
+          ListTile(title: Text('getItemsByAuthor("buckett") -> ${byAuthor.length}')),
+          ListTile(title: Text('getRecentItems(60 days) -> ${recent.length}')),
+        ],
       ),
     );
   }
+}
+
+class _Header extends StatelessWidget {
+  const _Header(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+        child: Text(text,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold)),
+      );
 }
